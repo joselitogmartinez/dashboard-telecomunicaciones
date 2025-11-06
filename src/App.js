@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client'; // <-- Importa el cliente
 import './App.css';
 
 const API_BASE_URL = 'http://206.189.214.35:3000/api';
+const SOCKET_URL = 'http://206.189.214.35:3000'; // Cambia si usas otra IP/puerto
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -14,6 +16,17 @@ function App() {
   useEffect(() => {
     fetchUsers();
     fetchAccessLogs();
+
+    // Conexión Socket.IO
+    const socket = io(SOCKET_URL);
+
+    socket.on('new-access-log', (log) => {
+      setAccessLogs(prev => [log, ...prev]); // Agrega el nuevo log al inicio
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const fetchUsers = async () => {
