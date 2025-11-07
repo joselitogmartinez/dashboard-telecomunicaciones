@@ -19,7 +19,6 @@ function App() {
     fetchUnauthorizedAccess();
     fetchDoorStatus();
 
-    // Actualizar estado de puerta cada 3 segundos
     const intervalId = setInterval(() => {
       fetchDoorStatus();
       fetchUnauthorizedAccess();
@@ -149,7 +148,6 @@ function App() {
       </nav>
 
       <div className="container">
-        {/* Tabs */}
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
             <button 
@@ -184,7 +182,6 @@ function App() {
         {activeTab === 'dashboard' && (
           <div>
             <div className="row mb-4">
-              {/* Estado de la Puerta */}
               <div className="col-md-6">
                 <div className="card">
                   <div className="card-header bg-primary text-white">
@@ -217,7 +214,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Estadísticas */}
               <div className="col-md-6">
                 <div className="card">
                   <div className="card-header bg-info text-white">
@@ -249,7 +245,6 @@ function App() {
               </div>
             </div>
 
-            {/* Accesos No Autorizados Recientes */}
             <div className="row">
               <div className="col-12">
                 <div className="card border-danger">
@@ -287,12 +282,8 @@ function App() {
                             {unauthorizedAccess.map((log, index) => (
                               <tr key={index} className="table-danger">
                                 <td>{formatDate(log.timestamp)}</td>
-                                <td>
-                                  <strong>{log.reason}</strong>
-                                </td>
-                                <td>
-                                  <code>{log.accessCode || 'N/A'}</code>
-                                </td>
+                                <td><strong>{log.reason}</strong></td>
+                                <td><code>{log.accessCode || 'N/A'}</code></td>
                                 <td>
                                   <span className="badge bg-danger">
                                     <i className="fas fa-times me-1"></i>
@@ -315,14 +306,159 @@ function App() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            {/* [Mantener el código existente de gestión de usuarios] */}
+            <div className="row">
+              <div className="col-md-4">
+                <div className="card">
+                  <div className="card-header">
+                    <h5><i className="fas fa-user-plus me-2"></i>Agregar Nuevo Usuario</h5>
+                  </div>
+                  <div className="card-body">
+                    <form onSubmit={createUser}>
+                      <div className="mb-3">
+                        <label className="form-label">Nombre</label>
+                        <input 
+                          type="text" 
+                          className="form-control"
+                          value={newUser.name}
+                          onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Código de Acceso</label>
+                        <input 
+                          type="text" 
+                          className="form-control"
+                          value={newUser.accessCode}
+                          onChange={(e) => setNewUser({...newUser, accessCode: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="mb-3 form-check">
+                        <input 
+                          type="checkbox" 
+                          className="form-check-input"
+                          checked={newUser.isActive}
+                          onChange={(e) => setNewUser({...newUser, isActive: e.target.checked})}
+                        />
+                        <label className="form-check-label">Usuario Activo</label>
+                      </div>
+                      <button type="submit" className="btn btn-primary w-100">
+                        <i className="fas fa-plus me-2"></i>Crear Usuario
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-md-8">
+                <div className="card">
+                  <div className="card-header">
+                    <h5><i className="fas fa-users me-2"></i>Lista de Usuarios</h5>
+                  </div>
+                  <div className="card-body">
+                    {loading ? (
+                      <div className="text-center">
+                        <div className="spinner-border" role="status">
+                          <span className="visually-hidden">Cargando...</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="table-responsive">
+                        <table className="table table-striped">
+                          <thead>
+                            <tr>
+                              <th>Nombre</th>
+                              <th>Código</th>
+                              <th>Estado</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {users.map(user => (
+                              <tr key={user._id}>
+                                <td>{user.name}</td>
+                                <td><code>{user.accessCode}</code></td>
+                                <td>
+                                  <span className={`badge ${user.isActive ? 'bg-success' : 'bg-secondary'}`}>
+                                    {user.isActive ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <button 
+                                    className={`btn btn-sm ${user.isActive ? 'btn-warning' : 'btn-success'} me-2`}
+                                    onClick={() => toggleUserStatus(user._id, user.isActive)}
+                                  >
+                                    <i className={`fas ${user.isActive ? 'fa-pause' : 'fa-play'} me-1`}></i>
+                                    {user.isActive ? 'Desactivar' : 'Activar'}
+                                  </button>
+                                  <button 
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => deleteUser(user._id)}
+                                  >
+                                    <i className="fas fa-trash me-1"></i>
+                                    Eliminar
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Logs Tab */}
         {activeTab === 'logs' && (
           <div className="card">
-            {/* [Mantener el código existente de historial de accesos] */}
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5><i className="fas fa-history me-2"></i>Historial de Accesos</h5>
+              <button 
+                className="btn btn-sm btn-outline-primary"
+                onClick={fetchAccessLogs}
+              >
+                <i className="fas fa-sync-alt me-1"></i>
+                Actualizar
+              </button>
+            </div>
+            <div className="card-body">
+              <div className="table-responsive">
+                <table className="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Fecha y Hora</th>
+                      <th>Usuario</th>
+                      <th>Código</th>
+                      <th>Puerta</th>
+                      <th>Estado</th>
+                      <th>Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessLogs.map((log, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(log.timestamp)}</td>
+                        <td>{log.userName || 'Desconocido'}</td>
+                        <td><code>{log.accessCode}</code></td>
+                        <td>{log.doorId}</td>
+                        <td>
+                          <span className={`badge ${log.granted ? 'bg-success' : 'bg-danger'}`}>
+                            <i className={`fas ${log.granted ? 'fa-check' : 'fa-times'} me-1`}></i>
+                            {log.granted ? 'Autorizado' : 'Denegado'}
+                          </span>
+                        </td>
+                        <td>{log.reason || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </div>
